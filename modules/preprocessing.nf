@@ -14,6 +14,7 @@ process TRIMMING {
 
     input:
         tuple val(pair_id), path(reads)
+        val trim_args
 
     output:
         tuple val(pair_id), path('*1.fq.gz'), path('*2.fq.gz'),     emit: trimread
@@ -22,7 +23,7 @@ process TRIMMING {
     script:
     """
     fastqc -t $task.cpus ${reads[0]} ${reads[1]}
-    trim_galore --cores $task.cpus --fastqc --gzip $params.trim_args --paired ${reads[0]} ${reads[1]}
+    trim_galore --cores $task.cpus --fastqc --gzip $trim_args --paired ${reads[0]} ${reads[1]}
     """
 }
 
