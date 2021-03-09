@@ -1,6 +1,13 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
 LABEL authors="Nicholas Toda" \
       description="Docker image containing all software requirements for the cyclerassembler pipeline"
+
+RUN apt-get update 
+RUN apt-get install -y wget 
+
+RUN wget https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh \
+    && bash Anaconda3-2019.03-Linux-x86_64.sh -b \
+    && rm Anaconda3-2019.03-Linux-x86_64.sh
 
 # Install the conda environment
 COPY environment.yml /
