@@ -9,19 +9,16 @@ channels:
   - biobuilds
 
 dependencies:
-  - conda-forge::python=3.9.1
-  - conda-forge::markdown=3.3.3
-  - conda-forge::pymdown-extensions=8.1.1
-  - conda-forge::pygments=2.7.4
+  - conda-forge::python=3.8.0
   - bioconda::trim-galore=0.6.6
   - bioconda::bbmap=38.90
   - bioconda::vsearch=2.15.2
-  - bioconda::nextgenmap=v0.5.5
-  - bioconda::samtools=v1.11
-  - bioconda::afterqc=v0.9.7
-  - bioconda::spades=v3.15.0
-  - bioconda::seqtk=v1.3
-  - bioconda::muscle=v3.8.1551
-  - biobuilds::fastq=v36.3.8e
+  - bioconda::nextgenmap=0.5.5
+  - bioconda::samtools=1.11
+  - bioconda::afterqc=0.9.7
+  - bioconda::spades=3.15.0
+  - bioconda::seqtk=1.3
+  - bioconda::muscle=3.8.1551
+  - biobuilds::fasta=36.3.8e
 
 
