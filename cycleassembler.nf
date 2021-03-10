@@ -95,8 +95,8 @@ workflow {
     if ( params.three_prime_clip_r2 != 0 ){ trim_args += '--three_prime_clip_R2 ' + params.three_prime_clip_r2 }
     TRIMMING(reads_ch, trim_args)
     DEDUPE(TRIMMING.out.trimread)
-    //CORRECT(DEDUPE.out.dedupreads)
     NORM(DEDUPE.out.dedupreads)
+    //CORRECT(NORM.out.normreads)
     
     // Initial assembly to get seed sequences
     if( ! params.seeds ){
