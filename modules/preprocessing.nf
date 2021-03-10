@@ -64,8 +64,7 @@ process NORM {
 
     script:
     """
-    tadpole.sh overwrite=true mode=correct k=50 in=$reads1 in2=$reads2 out=reads.tadpole.1.fq.gz out2=reads.tadpole.2.fq.gz 
-    bbnorm.sh overwrite=true mindepth=1 target=100 in=reads.tadpole.1.fq.gz in2=reads.tadpole.2.fq.gz out=reads.norm.1.fq.gz out2=reads.norm.2.fq.gz
+    bbnorm.sh overwrite=true mindepth=1 target=100 in=$reads1 in2=$reads2 out=reads.norm.1.fq.gz out2=reads.norm.2.fq.gz
     stats.sh overwrite=true in=reads.norm.1.fq.gz out=${pair_id}.normalization_stats.txt 
     """
 }
