@@ -88,7 +88,7 @@ process CORRECT {
     """
     zcat $reads1 > reads.1.fq
     zcat $reads2 > reads.2.fq
-    tadpole.sh in=reads.1.fq in2=reads.2.fq out=reads.1.corr.fq out2=reads.2.corr.fq mode=correct k=$params.correct_kmer ecc=t -Xmx1g prealloc=t prefilter=1 prepasses=auto
+    tadpole.sh in=reads.1.fq in2=reads.2.fq out=reads.1.corr.fq out2=reads.2.corr.fq mode=correct k=$params.correct_kmer ecc=t -Xmx1g prealloc=t prefilter=2 prepasses=auto prefiltersize=0.6
     repair.sh overwrite=true in1=reads.1.corr.fq in2=reads.2.corr.fq out1=reads.corrRep.1.fq.gz out2=reads.corrRep.2.fq.gz repair
     """
 }
