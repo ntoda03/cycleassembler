@@ -14,6 +14,9 @@ function extract_bam_reads {
   local prefix=$1   
   local cores=$2
     
+  if [[ $prefix == *".bam" ]]; then
+    prefix=${prefix%.bam}
+  fi
   samtools view --threads $cores -bh -F 4 -f 8 $prefix.bam > $prefix.1.bam
   samtools view --threads $cores -bh -F 8 -f 4 $prefix.bam > $prefix.2.bam
   samtools view --threads $cores -bh -F12 $prefix.bam > $prefix.3.bam
