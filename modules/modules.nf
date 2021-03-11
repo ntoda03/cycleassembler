@@ -15,43 +15,55 @@ process NGMALIGN {
         path reference
 
     output:
-        tuple val(pair_id), path('align.ngm.1.fq'), path('align.ngm.2.fq'),     emit: ngmread
-        path 'align.ngm.bam',                                                     emit: ngmbam
-
-    //beforeScript "source $projectDir/bin/functions.sh"
+        tuple val(pair_id), path('align.ngm.bam'),                  emit: ngmbam
 
     script:
     """
-    source $projectDir/bin/functions.sh
     ngm -b -r $reference -1 $reads1 -2 $reads2 -o align.ngm.bam -t $task.cpus
-    extract_bam_reads align.ngm $task.cpus
-    if [ -s align.ngm.1.fq ]; then
-      echo 'Mapping complete.''
-    else
-      echo 'Error with mapping.''
-      return 1  
-    fi
     """
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 /*                                                                           */
-/*               AFTERQC automatic read filtering and QC                     */
+/*               EXTRACTBAM extract reads from a bam file                    */
 /*                                                                           */
 ///////////////////////////////////////////////////////////////////////////////
 
-process AFTERQC {
+
+process EXTRACTBAM {
+    //beforeScript "source $projectDir/bin/functions.sh"
+
+    input:
+        tuple val(pair_id), path(bam)
+
+    output:
+        tuple val(pair_id), path('align.ngm.1.fq'), path('align.ngm.2.fq'),     emit: extractread
+
+    script:
+    """
+    source $projectDir/bin/functions.sh
+    extract_bam_reads $bam $task.cpus
+    """
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/*                                                                           */
+/*               COMPLEXITYFILTER remove low complexity reads PE             */
+/*                                                                           */
+///////////////////////////////////////////////////////////////////////////////
+
+process COMPLEXITYFILTER {
     input:
         tuple val(pair_id), path(reads1), path(reads2)
         val trimargs
 
     output:
-        tuple val(pair_id), path('goodreads/*.1.good.fq'), path('goodreads/*.2.good.fq'),     emit: qcread
+        tuple val(pair_id), path('good.1.fq.gz'), path('good.2.fq.gz'),     emit: filterread
 
     script:
     """
-    after.py -1 $reads1 -2 $reads2 $trimargs -g goodreads/ -b badreads/
+    fastp -G -A -L -Q --low_complexity_filter -i $reads1 -I $reads2 -o good.1.fq.gz -O good.2.fq.gz
     """
 }
 
@@ -104,10 +116,11 @@ process BLASTFILTER {
     output:
         tuple val(pair_id), path('scaffolds.verified.fasta'),           emit: filtercontigs
 
-    beforeScript "source $projectDir/bin/functions.sh"
+    //beforeScript "source $projectDir/bin/functions.sh"
 
     script:
     """
+    source $projectDir/bin/functions.sh
     $fasta_command -E 1e-10 -T $task.cpus -m 8  $contigs $reference | \
         sed 's/_/ /g' |sed 's/ /_/g' |awk '{print \$1}' |sort |uniq > scaffolds.blast.list
     if [ ! -s scaffolds.blast.list ]; then
