@@ -6,8 +6,9 @@ RUN apt-get update
 RUN apt-get install -y wget 
 
 RUN wget https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh \
-    && bash Anaconda3-2019.03-Linux-x86_64.sh -b \
+    && bash Anaconda3-2019.03-Linux-x86_64.sh -b -p /usr/local/bin/anaconda \
     && rm Anaconda3-2019.03-Linux-x86_64.sh
+ENV PATH=/usr/local/bin/anaconda/bin:$PATH
 
 # Install the conda environment
 COPY environment.yml /
