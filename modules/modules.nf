@@ -19,7 +19,7 @@ process NGMALIGN {
 
     script:
     """
-    ngm -b -r $reference -1 $reads1 -2 $reads2 -o align.ngm.bam -t $task.cpus
+    ngm -b -r $reference -1 $reads1 -2 $reads2 -o align.ngm.bam -t $task.cpus > ngm.log 2> ngm.err
     """
 }
 
@@ -32,8 +32,6 @@ process NGMALIGN {
 
 
 process EXTRACTBAM {
-    //beforeScript "source $projectDir/bin/functions.sh"
-
     input:
         tuple val(pair_id), path(bam)
 
@@ -116,8 +114,6 @@ process BLASTFILTER {
     output:
         tuple val(pair_id), path('scaffolds.verified.fasta'),           emit: filtercontigs
 
-    //beforeScript "source $projectDir/bin/functions.sh"
-
     script:
     """
     source $projectDir/bin/functions.sh
@@ -131,3 +127,96 @@ process BLASTFILTER {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+/*                                                                           */
+/*             CYCLEASSEM iterative assembly based on updated reference      */
+/*                                                                           */
+///////////////////////////////////////////////////////////////////////////////
+
+process CYCLEASSEM {
+    input:
+        tuple val(pair_id), path(initial_contigs)
+        tuple val(pair_id), path(reads1), path(reads2)
+        path reference
+        val fasta_command
+        val maxit
+
+    output:
+        tuple val(pair_id), path('final_scaffolds.fasta'),           emit: cyclecontigs
+
+    script:
+    """
+    source $projectDir/bin/functions.sh
+    i=0
+    contcount=10 
+    cycle_genome=$initial_contigs
+
+    while ( [ \"\$i\" -le \"$maxit\" ] && [ \"\$contcount\" -gt \"1\" ] ); do
+        let i=i+1 
+        mkdir run_\$i/
+
+        #### Map reads against seed contigs to get mapped reads ####
+        ngm -b -i 0.99 -r \$cycle_genome -1 $reads1 -2 $reads2 -o run_\$i/output.bam -t $task.cpus > run_\$i/ngm.log 2> run_\$i/ngm.err
+        command_success=0
+        grep '(0 reads mapped' run_\$i/ngm.err > /dev/null 2>1 || command_success=1
+        if [ \"\$command_success\" -eq 0 ]; then
+          if [ \"\$i\" -eq 1 ]; then
+            echo 'Mapping to cycle assembly failed. Using inital contigs.'
+            cp $initial_contigs final_scaffolds.fa
+          else
+            echo 'Subsequent cycle mapping failed. Using previous cycle.'
+            let i=i-1
+            cp run_\$i/scaffolds.verified.fasta final_scaffolds.fa
+            break
+          fi
+        fi
+        extract_bam_reads run_\$i/output $task.cpus
+        gzip run_\$i/output.*.fq
+        rm -f run_\$i/*.bam run_\$i/*.ngm run_\$i/*.bt2
+
+        #### Do de novo assembly of plastid reads ####
+        fastp -G -A -L -Q --low_complexity_filter -i run_\$i/output.1.fq.gz -I run_\$i/output.2.fq.gz -o run_\$i/good.1.fq.gz -O run_\$i/good.2.fq.gz
+        spades.py --cov-cutoff 1 -1 run_\$i/good.1.fq.gz -2 run_\$i/good.2.fq.gz -t $task.cpus -o run_\$i/spades_assembly
+        if [ -s run_\$i/spades_assembly/scaffolds.fasta ]; then
+          cp run_\$i/spades_assembly/scaffolds.fasta run_\$i/scaff.fa
+        else
+          if [ -s run_\$i/spades_assembly/contigs.fasta ]; then
+            echo 'Warning: only contigs produced in spades assembly.'
+            cp run_\$i/spades_assembly/contigs.fasta run_\$i/scaff.fa
+          else
+            echo 'Error in spades cycle assembly. Low quality data likely.'
+            exit 1
+          fi
+        fi
+
+        #### Only keep scaffolds that blast back to reference genome to discard junk ####
+        $fasta_command -E 1e-10 -T $task.cpus -m 8 run_\$i/scaff.fa $reference | \
+            sed 's/_/ /g' |sed 's/ /_/g' |awk '{print \$1}' |sort |uniq > run_\$i/spades_assembly/scaffolds.blast.list
+        if [ ! -s run_\$i/spades_assembly/scaffolds.blast.list ]; then
+          if [ \"\$i\" -eq 1 ]; then
+            echo 'No hits found. Using inital contigs.'
+            cp $initial_contigs run_\$i/scaff.fa
+          else
+            echo 'No hits found. Using previous cycle.'
+            let i=i-1
+            cp run_\$i/scaffolds.verified.fasta run_\$i/scaff.fa
+          fi
+          $fasta_command -E 1e-10 -T $task.cpus -m 8 run_\$i/scaff.fa $reference | \
+            sed 's/_/ /g' |sed 's/ /_/g' |awk '{print \$1}' |sort |uniq > run_\$i/spades_assembly/scaffolds.blast.list
+          extractBlastedScaff run_\$i/spades_assembly/scaffolds.blast.list run_\$i/scaff.fa run_\$i/scaffolds.verified.fasta T
+          samtools faidx run_\$i/scaffolds.verified.fasta
+          break
+        fi
+        extractBlastedScaff run_\$i/spades_assembly/scaffolds.blast.list run_\$i/scaff.fa run_\$i/scaffolds.verified.fasta T
+
+        #### Check summary statistics of new plastid assembly ####
+        contcount=\$(grep -c '>' run_\$i/scaffolds.verified.fasta)
+        samtools faidx run_\$i/scaffolds.verified.fasta
+        cycle_genome=run_\$i/scaffolds.verified.fasta
+        rm -f run_\$i/*fq* run_\$i/*fa run_\$i/*ngm
+    done
+    if [ \"\$i\" -le \"$maxit\" ] && [ \"\$contcount\" -gt \"1\" ]; then
+        cp run_\$i/scaffolds.verified.fasta final_scaffolds.fa
+    fi
+    """
+}
