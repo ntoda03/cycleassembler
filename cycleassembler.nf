@@ -4,8 +4,8 @@ nextflow.enable.dsl=2
 
 include {read_fastq}                                  from './modules/filehandling'
 include {TRIMMING; DEDUPE; CORRECT; NORM}             from './modules/preprocessing'
-include {NGMALIGN; AFTERQC; SPADESASSEM; BLASTFILTER} from './modules/modules'
-//include {SEEDASSEMBLY; CYCLEASSEMBLER}              from './modules/modules'
+include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}     from './modules/modules'
+include {EXTRACTBAM; BLASTFILTER}                   from './modules/modules'
 
 /*
 ========================================================================================
@@ -101,8 +101,9 @@ workflow {
     // Initial assembly to get seed sequences
     if( ! params.seeds ){
         NGMALIGN(NORM.out.normreads, ref_ch)
-        AFTERQC(NGMALIGN.out.ngmread, '-f 0 -t 0 -u 0')
-        SPADESASSEM(AFTERQC.out.qcread, '--cov-cutoff 1')
+        EXTRACTBAM(NGMALIGN.out.ngmbam)
+        COMPLEXITYFILTER(EXTRACTBAM.out.extractread, '-f 0 -t 0 -u 0')
+        SPADESASSEM(COMPLEXITYFILTER.out.filterread, '--cov-cutoff 1')
         seeds_ch = SPADESASSEM.out.assembly
     }
     else{
