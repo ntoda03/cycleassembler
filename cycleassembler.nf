@@ -108,7 +108,4 @@ workflow {
     // Iteratively assemble reads 
     BLASTFILTER(seeds_ch,ref_ch,fasta_command)
     CYCLEASSEM(BLASTFILTER.out.filtercontigs,NORM.out.normreads,ref_ch,fasta_command,params.maxit )
-    //SEEDASSEMBLY(NORM.out.normreads, params.reference)
-    //CYCLEASSEMBLER(SEEDASSEMBLY.out, params.reference, params.reference_type, params.maxit)
-    //CYCLEASSEMBLER.out.view()
 }

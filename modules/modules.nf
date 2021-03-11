@@ -142,7 +142,7 @@ process CYCLEASSEM {
         val maxit
 
     output:
-        tuple val(pair_id), path('final_scaffolds.fasta'),           emit: cyclecontigs
+        tuple val(pair_id), path('final_scaffolds.fa'),           emit: cyclecontigs
 
     script:
     """
@@ -151,7 +151,7 @@ process CYCLEASSEM {
     contcount=10 
     cycle_genome=$initial_contigs
 
-    while ( [ \"\$i\" -le \"$maxit\" ] && [ \"\$contcount\" -gt \"1\" ] ); do
+    while ( [ \"\$i\" -lt \"$maxit\" ] && [ \"\$contcount\" -gt \"1\" ] ); do
         let i=i+1 
         mkdir run_\$i/
 
@@ -210,12 +210,12 @@ process CYCLEASSEM {
         extractBlastedScaff run_\$i/spades_assembly/scaffolds.blast.list run_\$i/scaff.fa run_\$i/scaffolds.verified.fasta T
 
         #### Check summary statistics of new plastid assembly ####
-        contcount=\$(grep -c '>' run_\$i/scaffolds.verified.fasta)
+        contcount=\$(grep -c \">\" run_\$i/scaffolds.verified.fasta)
         samtools faidx run_\$i/scaffolds.verified.fasta
         cycle_genome=run_\$i/scaffolds.verified.fasta
         rm -f run_\$i/*fq* run_\$i/*fa run_\$i/*ngm
     done
-    if [ \"\$i\" -le \"$maxit\" ] && [ \"\$contcount\" -gt \"1\" ]; then
+    if [ \"\$i\" -eq \"$maxit\" ] || [ \"\$contcount\" -eq \"1\" ]; then
         cp run_\$i/scaffolds.verified.fasta final_scaffolds.fa
     fi
     """
