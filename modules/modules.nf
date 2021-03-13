@@ -134,6 +134,8 @@ process BLASTFILTER {
 ///////////////////////////////////////////////////////////////////////////////
 
 process CYCLEASSEM {
+    publishDir '$outdir/assmbled_contigs', mode: 'copy'
+
     input:
         tuple val(pair_id), path(initial_contigs)
         tuple val(pair_id), path(reads1), path(reads2)
@@ -254,7 +256,7 @@ process EXTRACTEXONS {
         path(exons)
 
     output:
-        tuple val(pair_id), path('gene_search.fa'),           emit: cyclecontigs
+        tuple val(pair_id), path('gene_search.fa'),           emit: exonseqs
 
     script:
     """
@@ -281,33 +283,32 @@ process EXTRACTEXONS {
 
 ///////////////////////////////////////////////////////////////////////////////
 /*                                                                           */
-/*             FINDEXONS align sequences with muscle      */
+/*             FINDEXONS find exon sequences in contigs                      */
 /*                                                                           */
 ///////////////////////////////////////////////////////////////////////////////
 
+process FINDEXONS {
+    publishDir '$outdir/exons', mode: 'copy', pattern: 'exon_sequences/*.fa'
 
-process EXTRACTEXONS {
     input:
-        tuple val(pair_id), path(contigs)
+        tuple val(pair_id), path(seqs)
         path(exons)
 
     output:
-        tuple val(pair_id), path('gene_search.fa'),           emit: cyclecontigs
+        tuple val(pair_id), path('exon_sequences/*.fa'),           emit: exonsbra
 
     script:
     """
+    source $projectDir/bin/functions.sh
     # Get the best reciprical alignment between exons and extracted sequences to only have 1 per exons
-    getBRA $skimdir/$basename1.$genes_name/$genes_name.gene_search.fa $genes dna_dna
-    mkdir -p $skimdir/$basename1.$genes_name/exon_sequences $skimdir/$genes_name/exon_sequences/
-    samtools faidx $skimdir/$basename1.$genes_name/$genes_name.gene_search.fa
-    samtools faidx $genes
+    getBRA $seqs $exons dna_dna
+    mkdir -p exon_sequences 
     while IFS=' ' read col1 col2
     do
-      samtools faidx $skimdir/$basename1.$genes_name/$genes_name.gene_search.fa $col1 > $skimdir/$basename1.$genes_name/exon_sequences/${basename1}__${col2}__.fa
-      sed -i 's/___/:/g' $skimdir/$basename1.$genes_name/exon_sequences/${basename1}__${col2}__.fa
-      sed -i 's/__/-/g' $skimdir/$basename1.$genes_name/exon_sequences/${basename1}__${col2}__.fa
-      sed -i "s/>/>$basename1./g" $skimdir/$basename1.$genes_name/exon_sequences/${basename1}__${col2}__.fa
-      samtools faidx $genes $col2 > $skimdir/$basename1.$genes_name/exon_sequences/${genes_name}__${col2}__.fa
-    done <$skimdir/$basename1.$genes_name/$genes_name.gene_search.fa.BRA.dna_dna.txt
+      samtools faidx $seqs \$col1 > exon_sequences/\${col2}.fa
+      sed -i 's/___/:/g' exon_sequences/\${col2}.fa
+      sed -i 's/__/-/g' exon_sequences/\${col2}.fa
+    done < ${seqs}.BRA.dna_dna.txt
     """
 }
+
