@@ -20,6 +20,7 @@ dependencies:
   - bioconda::seqtk=1.3
   - bioconda::muscle=3.8.1551
   - bioconda::reaper=16.098
+  - bioconda::bedtools=2.30.0
   - biobuilds::fasta=36.3.8e
 
 
