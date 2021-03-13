@@ -260,19 +260,20 @@ process EXTRACTEXONS {
 
     script:
     """
-    cp $exon exons.fa
+    source $projectDir/bin/functions.sh
+    cp $exons exons.fa
     # Extract sequences that are hits for exons
     sed -i 's/_length.*//g' $contigs
     # Coordinates start from the end of the contig if they align on negative strand so avoid that by adding revcomp of all contigs
     seqtk seq -r $contigs > scaffolds.rev.fa
     sed -i 's/>/>R/g' scaffolds.rev.fa
     cat scaffolds.rev.fa >> $contigs
-    fasta36 -E 1E-10 -T $taks.cpus -m 8 $exons $contigs > gene_search.txt 2> /dev/null
+    fasta36 -E 1E-10 -T $task.cpus -m 8 $exons $contigs > gene_search.txt 2> /dev/null
     awk '(\$8>\$7) && (\$10>\$9) {print \$0}' gene_search.txt > gene_search.stranded.txt
     # Only except hits that span >80% of the exon
     samtools faidx exons.fa
     $projectDir/bin/mergeBlastHits.py gene_search.stranded.txt gene_search.stranded_merge.txt flanking_positive 50
-    join <(awk '{printf \"%s %s:%s-%s %s\n\",\$1,\$2,\$9,\$10,\$8-\$7}' gene_search.stranded_merge.txt |sort -k1,1 |uniq) <(awk '{print \$1,\$2}' exons.fa.fai |sort -k1,1) \
+    join <(awk '{printf \"%s %s:%s-%s %s\\n\",\$1,\$2,\$9,\$10,\$8-\$7}' gene_search.stranded_merge.txt |sort -k1,1 |uniq) <(awk '{print \$1,\$2}' exons.fa.fai |sort -k1,1) \
         |awk '((0.8*\$4) < \$3) {print \$2}' |uniq > gene_search.filtered.txt
     extract_seq gene_search.filtered.txt $contigs gene_search.fa F    
     sed -i 's/-/__/g' gene_search.fa

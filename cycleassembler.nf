@@ -6,7 +6,7 @@ include {read_fastq}                                  from './modules/filehandli
 include {TRIMMING; DEDUPE; CORRECT; NORM}             from './modules/preprocessing'
 include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}     from './modules/modules'
 include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}         from './modules/modules'
-include {EXTRACTEXONS; MUSCLE}         from './modules/modules'
+include {EXTRACTEXONS; FINDEXONS; MUSCLE}         from './modules/modules'
 
 /*
 ========================================================================================
@@ -117,6 +117,8 @@ workflow {
 
     // optional extraction of exon sequences
     if( params.exons ){
-        EXTRACTEXONS(CYCLEASSEM.out.cyclecontigs, params.exons)
+        exons_ch = Channel.fromPath(params.exons, checkIfExists: true)
+        EXTRACTEXONS(CYCLEASSEM.out.cyclecontigs, exons_ch)
+        FINDEXONS(EXTRACTEXONS.out.exonseqs, exons_ch)
     }
 }
