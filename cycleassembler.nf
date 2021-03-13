@@ -6,6 +6,7 @@ include {read_fastq}                                  from './modules/filehandli
 include {TRIMMING; DEDUPE; CORRECT; NORM}             from './modules/preprocessing'
 include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}     from './modules/modules'
 include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}         from './modules/modules'
+include {EXTRACTEXONS; MUSCLE}         from './modules/modules'
 
 /*
 ========================================================================================
@@ -42,7 +43,7 @@ def helpMessage() {
         --outdir                        Diretory to store output files in
 
     Trimming
-        --clip_r1 [int]           Remove int bases from the start of paired end read 1 (default: 0)
+        --clip_r1 [int]                 Remove int bases from the start of paired end read 1 (default: 0)
         --clip_r1_end   [int]           Remove int bases from the end of paired end read 1 (default: 0)
         --clip_r2_start [int]           Remove int bases from the start of paired end read 2 (default: 0)
         --clip_r2_end   [int]           Remove int bases from the end of reverse paired end read 2 (default: 0)
@@ -50,6 +51,11 @@ def helpMessage() {
 
     Assembly
         --initial_scaffolds [file]      Seed scaffolds to use, otherwise will be based on mapping to reference
+
+    Exon extraction
+        --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
+                                        to the assembled contigs and the corresponding sequences will be
+                                        extracted.
 
 """.stripIndent()
 }
@@ -108,4 +114,9 @@ workflow {
     // Iteratively assemble reads 
     BLASTFILTER(seeds_ch,ref_ch,fasta_command)
     CYCLEASSEM(BLASTFILTER.out.filtercontigs,NORM.out.normreads,ref_ch,fasta_command,params.maxit )
+
+    // optional extraction of exon sequences
+    if( params.exons ){
+        EXTRACTEXONS(CYCLEASSEM.out.cyclecontigs, params.exons)
+    }
 }
