@@ -134,7 +134,7 @@ process BLASTFILTER {
 ///////////////////////////////////////////////////////////////////////////////
 
 process CYCLEASSEM {
-    publishDir '$outdir/assmbled_contigs', mode: 'copy'
+    publishDir "$params.outdir/assembled_contigs", mode: 'copy'
 
     input:
         tuple val(pair_id), path(initial_contigs)
@@ -144,7 +144,7 @@ process CYCLEASSEM {
         val maxit
 
     output:
-        tuple val(pair_id), path('final_scaffolds.fa'),           emit: cyclecontigs
+        tuple val(pair_id), path("${pair_id}.final_scaffolds.fa"),           emit: cyclecontigs
 
     script:
     """
@@ -164,11 +164,11 @@ process CYCLEASSEM {
         if [ \"\$command_success\" -eq 0 ]; then
           if [ \"\$i\" -eq 1 ]; then
             echo 'Mapping to cycle assembly failed. Using inital contigs.'
-            cp $initial_contigs final_scaffolds.fa
+            cp $initial_contigs ${pair_id}.final_scaffolds.fa
           else
             echo 'Subsequent cycle mapping failed. Using previous cycle.'
             let i=i-1
-            cp run_\$i/scaffolds.verified.fasta final_scaffolds.fa
+            cp run_\$i/scaffolds.verified.fasta ${pair_id}.final_scaffolds.fa
             break
           fi
         fi
@@ -218,28 +218,8 @@ process CYCLEASSEM {
         rm -f run_\$i/*fq* run_\$i/*fa run_\$i/*ngm
     done
     if [ \"\$i\" -eq \"$maxit\" ] || [ \"\$contcount\" -eq \"1\" ]; then
-        cp run_\$i/scaffolds.verified.fasta final_scaffolds.fa
+        cp run_\$i/scaffolds.verified.fasta ${pair_id}.final_scaffolds.fa
     fi
-    """
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-/*                                                                           */
-/*             MUSCLE align sequences with muscle      */
-/*                                                                           */
-///////////////////////////////////////////////////////////////////////////////
-
-process MUSCLE {
-    //input:
-        //tuple val(pair_id), path(initial_contigs)
-
-    //output:
-        //tuple val(pair_id), path('final_scaffolds.fa'),           emit: cyclecontigs
-
-    script:
-    """
-    muscle
     """
 }
 
@@ -289,27 +269,52 @@ process EXTRACTEXONS {
 ///////////////////////////////////////////////////////////////////////////////
 
 process FINDEXONS {
-    publishDir '$outdir/exons', mode: 'copy', pattern: 'exon_sequences/*.fa'
+    publishDir "$params.outdir/exons/", mode: 'copy'
 
     input:
         tuple val(pair_id), path(seqs)
         path(exons)
 
     output:
-        tuple val(pair_id), path('exon_sequences/*.fa'),           emit: exonsbra
+        tuple val(pair_id), path("$pair_id/*.fa"),           emit: exonsbra
 
     script:
     """
     source $projectDir/bin/functions.sh
     # Get the best reciprical alignment between exons and extracted sequences to only have 1 per exons
     getBRA $seqs $exons dna_dna
-    mkdir -p exon_sequences 
+    mkdir -p $pair_id/
     while IFS=' ' read col1 col2
     do
-      samtools faidx $seqs \$col1 > exon_sequences/\${col2}.fa
-      sed -i 's/___/:/g' exon_sequences/\${col2}.fa
-      sed -i 's/__/-/g' exon_sequences/\${col2}.fa
+        echo \$col2
+      samtools faidx $seqs \$col1 > $pair_id/\${col2}.fa
+      sed -i 's/___/:/g' $pair_id/\${col2}.fa
+      sed -i 's/__/-/g' $pair_id/\${col2}.fa
     done < ${seqs}.BRA.dna_dna.txt
     """
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+/*                                                                           */
+/*                 CLUSTER create clusters of exons                          */
+/*                                                                           */
+///////////////////////////////////////////////////////////////////////////////
+
+process CLUSTER {
+    publishDir "$params.outdir", mode: 'copy'
+
+    input:
+        tuple val(pair_id), path(seqs)
+        path exons
+
+    output:
+        tuple val(pair_id), path("exon_clusters/$pair_id/*"),           emit: clusters
+
+    script:
+    """
+    source $projectDir/bin/functions.sh
+    mkdir -p exon_clusters
+    create_cluster $exons $seqs nucl exon_clusters/$pair_id $task.cpus
+   """
+}
