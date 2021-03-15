@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 include {read_fastq}                                  from './modules/filehandling'
-include {TRIMMING; DEDUPE; CORRECT; NORM}             from './modules/preprocessing'
+include {TRIMMING; SKIPTRIM; DEDUPE; CORRECT; NORM}             from './modules/preprocessing'
 include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}     from './modules/modules'
 include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}         from './modules/modules'
 include {EXTRACTEXONS; FINDEXONS; CLUSTER}         from './modules/modules'
@@ -48,6 +48,7 @@ def helpMessage() {
         --clip_r2_start [int]           Remove int bases from the start of paired end read 2 (default: 0)
         --clip_r2_end   [int]           Remove int bases from the end of reverse paired end read 2 (default: 0)
         --skip_trimming [bool]          Skip the adapter trimming step (default: false)
+        --skip_dedupe [bool]            Skip the read deduplication step  (default: false)
 
     Assembly
         --initial_scaffolds [file]      Seed scaffolds to use, otherwise will be based on mapping to reference
@@ -99,10 +100,21 @@ workflow {
     if ( params.three_prime_clip_r1 != 0 ){ trim_args += '--three_prime_clip_R1 ' + params.three_prime_clip_r1 }
     if ( params.clip_r2 != 0 ){ trim_args += '--clip_R2 ' + params.clip_r2 }
     if ( params.three_prime_clip_r2 != 0 ){ trim_args += '--three_prime_clip_R2 ' + params.three_prime_clip_r2 }
-    TRIMMING(reads_ch, trim_args)
-    DEDUPE(TRIMMING.out.trimread)
-    NORM(DEDUPE.out.dedupreads)
-    //CORRECT(NORM.out.normreads)
+    if( ! params.skip_trimming ){
+        TRIMMING(reads_ch, trim_args)
+        trim_ch = TRIMMING.out.trimread
+    }
+    else{
+        SKIPTRIM(reads_ch, trim_args)
+        trim_ch = SKIPTRIM.out.skiptrim
+    }
+    if( ! params.skip_dedupe ){
+        DEDUPE(trim_ch)
+        dedupe_ch = DEDUPE.out.dedupreads
+    }
+    else{
+        dedupe_ch = trim_ch}
+    NORM(dedupe_ch)
     
     // Initial assembly to get seed sequences
     NGMALIGN(NORM.out.normreads, ref_ch)

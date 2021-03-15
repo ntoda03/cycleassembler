@@ -231,12 +231,14 @@ process CYCLEASSEM {
 ///////////////////////////////////////////////////////////////////////////////
 
 process EXTRACTEXONS {
+    publishDir "$params.outdir/exons/sequences/", mode: 'copy'
+
     input:
         tuple val(pair_id), path(contigs)
         path(exons)
 
     output:
-        tuple val(pair_id), path('gene_search.fa'),           emit: exonseqs
+        tuple val(pair_id), path('${pair_id}.fa'),           emit: exonseqs
 
     script:
     """
@@ -255,9 +257,9 @@ process EXTRACTEXONS {
     $projectDir/bin/mergeBlastHits.py gene_search.stranded.txt gene_search.stranded_merge.txt flanking_positive 50
     join <(awk '{printf \"%s %s:%s-%s %s\\n\",\$1,\$2,\$9,\$10,\$8-\$7}' gene_search.stranded_merge.txt |sort -k1,1 |uniq) <(awk '{print \$1,\$2}' exons.fa.fai |sort -k1,1) \
         |awk '((0.8*\$4) < \$3) {print \$2}' |uniq > gene_search.filtered.txt
-    extract_seq gene_search.filtered.txt $contigs gene_search.fa F    
-    sed -i 's/-/__/g' gene_search.fa
-    sed -i 's/:/___/g' gene_search.fa
+    extract_seq gene_search.filtered.txt $contigs ${pair_id}.fa F    
+    sed -i 's/-/__/g' ${pair_id}.fa
+    sed -i 's/:/___/g' ${pair_id}.fa
     """
 }
 
@@ -269,7 +271,7 @@ process EXTRACTEXONS {
 ///////////////////////////////////////////////////////////////////////////////
 
 process FINDEXONS {
-    publishDir "$params.outdir/exons/", mode: 'copy'
+    publishDir "$params.outdir/exons/identified/", mode: 'copy'
 
     input:
         tuple val(pair_id), path(seqs)
@@ -302,19 +304,22 @@ process FINDEXONS {
 ///////////////////////////////////////////////////////////////////////////////
 
 process CLUSTER {
-    publishDir "$params.outdir", mode: 'copy'
+    publishDir "$params.outdir/exons/", mode: 'copy'
 
     input:
         tuple val(pair_id), path(seqs)
         path exons
 
     output:
-        tuple val(pair_id), path("exon_clusters/$pair_id/*"),           emit: clusters
+        tuple val(pair_id), path("exon_clusters/$pair_id/*txt.fa"),           emit: clusterseqs
+        tuple val(pair_id), path("exon_clusters/$pair_id/*clw"),              emit: alignments
 
     script:
     """
     source $projectDir/bin/functions.sh
     mkdir -p exon_clusters
     create_cluster $exons $seqs nucl exon_clusters/$pair_id $task.cpus
+    cp exon_clusters/$pair_id/gene_search_clusters/*clw exon_clusters/$pair_id/
+    cp exon_clusters/$pair_id/gene_search_clusters/*txt.fa exon_clusters/$pair_id/
    """
 }
