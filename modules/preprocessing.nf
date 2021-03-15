@@ -39,7 +39,7 @@ process SKIPTRIM {
         val trim_args
 
     output:
-        tuple val(pair_id), path("$reads[0]"), path("$reads[1]"),     emit: skiptrim
+        tuple val(pair_id), path("${reads[0]}"), path("${reads[1]}"),     emit: skiptrim
 
     script:
     """
