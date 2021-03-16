@@ -7,7 +7,7 @@
 
 ## Introduction
 
-The **poleanalyse/cycleassembler** pipeline takes as input illumina reads and reference sequences of interest. The pipeline assembles initial contigs that map to the reference and then uses these new contigs to itertively search for more reads to extend the contigs. This pipeline is best used for plastid genome assembly, low coverage genome skimming assembly of histone genes, or assembly of target genes from whole genome data.
+The **poleanalyse/cycleassembler** pipeline takes as input illumina reads and reference sequences of interest. The pipeline assembles initial contigs that map to the reference and then uses these new contigs to itertively search for more reads to extend the contigs. This pipeline is best used for plastid genome assembly, low coverage genome skimming assembly of histone genes, or assembly of target genes from whole genome data. The assembly method used is not memory efficient so large references files (e.g. whole eukaryote genomes) should not be used.
 
 The pipeline uses [Nextflow](https://www.nextflow.io) to facilitate parallel and reproducible analyses. It uses Docker to make it easier to use and independent of software requirements.
 
@@ -23,7 +23,7 @@ Simply pull the project from github.
 
 Then it can be run passing in only the reads to analyze and the reference genome.
 
-`nextflow run cycleassembler -profile docker --reads "*_R{1,2}.fq.gz" --reference genome.fa`
+`nextflow run cycleassembler -profile docker --reads "*_R{1,2}.fq.gz" --reference sequences.fa`
 
 
 ## Pipeline Summary
