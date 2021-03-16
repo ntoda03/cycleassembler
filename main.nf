@@ -20,15 +20,17 @@ include {EXTRACTEXONS; FINDEXONS; CLUSTER}              from './modules/modules'
 def helpMessage() {
     log.info"""
     Usage:
-
+    
     The pipeline can be run as followed:
 
-      nextflow run cycleassembler 
+      nextflow run cycleassembler [options] --reads "reads_{1,2}.fq.gz" --reference sequences.fa
 
     Mandatory arguments:
 
     Input files
-        --reads  [file]                 Directory containing input fastq files to analyze
+        --reads  [file]                 Input paired end fastq files to analyze in quotes. 
+                                        {1,2} indicates the read pairing number and this must  come after the id.
+                                        A semicolon separated list and wildcards are be accepted.
 
     References
         --reference [file]              Homologous sequences of interest to focus on in fasta format
@@ -50,13 +52,11 @@ def helpMessage() {
         --skip_trimming [bool]          Skip the adapter trimming step (default: false)
         --skip_dedupe [bool]            Skip the read deduplication step  (default: false)
 
-    Assembly
-        --initial_scaffolds [file]      Seed scaffolds to use, otherwise will be based on mapping to reference
-
     Exon extraction
         --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
                                         to the assembled contigs and the corresponding sequences will be
                                         extracted.
+
 
 """.stripIndent()
 }
