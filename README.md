@@ -17,13 +17,13 @@ This pipeline can be run with only [Docker](https://docs.docker.com/engine/insta
 
 ## Quick start
 
-Simply pull the project from gitlab.
+Simply pull the project from github.
 
-`nextflow pull https://gitlab.in2p3.fr/pole-analyse/cycleassembler`
+`nextflow pull ntoda03/cycleassembler -r master`
 
 Then it can be run passing in only the reads to analyze and the reference genome.
 
-`nextflow run pole-analyse/cycleassembler -profile docker --reads "\*\_R{1,2}.fq.gz" --reference "genome.fa"`
+`nextflow run cycleassembler -profile docker --reads "*_R{1,2}.fq.gz" --reference "genome.fa"`
 
 
 ## Pipeline Summary
@@ -50,11 +50,7 @@ Iterative assembly
  * Filter for contigs that map to reference (`fasta36`)
  * Repeat with the assembled contigs as the new seed sequences
 
-Extract reference matches from the final contigs [optional]
-
-For use if using exon sequences as the reference sequences
-
-Using gene sequences will cause issues at intron boundaries
+[optional] Extract precise reference matches from the final contigs. For use if using exon sequences as the reference sequences. Using gene sequences will cause issues at intron boundaries
  * Get contigs in correct orientation (`seqtk`,`fastq36`)
  * Filter for hits that span 80% of the exon length
  * Extract the sequences (`samtools`)
