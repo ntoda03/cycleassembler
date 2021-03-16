@@ -1,8 +1,6 @@
 
 # poleanalyse/cycleassembler
 
-## UNDER DEVELOPMENT
-
 **Iterative assembly pipeline that extends from generated seed contigs**.
 
 ## Introduction
