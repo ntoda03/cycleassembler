@@ -57,6 +57,8 @@ Iterative assembly
 
 ## Running the pipeline
 
+<pre>
+
 The pipeline can be run as followed:
 
   nextflow run cycleassembler [options] --reads "reads_{1,2}.fq.gz" --reference sequences.fa
@@ -92,6 +94,7 @@ Exon extraction
     --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
                                     to the assembled contigs and the corresponding sequences will be
                                     extracted.
+</pre>
 
 ## Output files
 
