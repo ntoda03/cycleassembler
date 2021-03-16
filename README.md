@@ -58,7 +58,6 @@ Iterative assembly
 ## Running the pipeline
 
 <pre>
-
 The pipeline can be run as followed:
 
   nextflow run cycleassembler [options] --reads "reads_{1,2}.fq.gz" --reference sequences.fa
