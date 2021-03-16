@@ -2,11 +2,11 @@
 
 nextflow.enable.dsl=2
 
-include {read_fastq}                                  from './modules/filehandling'
-include {TRIMMING; SKIPTRIM; DEDUPE; CORRECT; NORM}             from './modules/preprocessing'
-include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}     from './modules/modules'
-include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}         from './modules/modules'
-include {EXTRACTEXONS; FINDEXONS; CLUSTER}         from './modules/modules'
+include {read_fastq}                                    from './modules/filehandling'
+include {TRIMMING; SKIPTRIM; DEDUPE; CORRECT; NORM}     from './modules/preprocessing'
+include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}       from './modules/modules'
+include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}           from './modules/modules'
+include {EXTRACTEXONS; FINDEXONS; CLUSTER}              from './modules/modules'
 
 /*
 ========================================================================================
@@ -83,8 +83,6 @@ if (params.help) {
 
 workflow {
     
-    //params.outdir += '/cycleassembler/'
-
     // Input reads are all paired fq and fq.gz files in input dir
     reads_ch = read_fastq(params.reads)
     ref_ch = file(params.reference)

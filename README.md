@@ -7,7 +7,7 @@
 
 ## Introduction
 
-The **poleanalyse/cycleassembler** pipeline takes as input illumina reads and reference sequnces of interest. The pipeline assembles initial contigs that map to the reference and then uses these new contigs to itertively search for more reads to extend the contigs. 
+The **poleanalyse/cycleassembler** pipeline takes as input illumina reads and reference sequences of interest. The pipeline assembles initial contigs that map to the reference and then uses these new contigs to itertively search for more reads to extend the contigs. 
 
 The pipeline uses [Nextflow](https://www.nextflow.io) to facilitate parallel and reproducible analyses. It uses Docker to make it easier to use and independent of software requirements.
 
@@ -16,6 +16,14 @@ The pipeline uses [Nextflow](https://www.nextflow.io) to facilitate parallel and
 This pipeline can be run with only [Docker](https://docs.docker.com/engine/installation/) and [Nextflow](https://www.nextflow.io) and an internet connection. A docker container containing all other dependencies will be downloaded by the pipeline and can be found [here](https://hub.docker.com/repository/docker/poleanalyse/cycleassembler).
 
 ## Quick start
+
+Simply pull the project from gitlab.
+
+`nextflow pull https://gitlab.in2p3.fr/pole-analyse/cycleassembler`
+
+Then it can be run passing in only the reads to analyze and the reference genome.
+
+`nextflow run pole-analyse/cycleassembler -profile docker --reads "\*\_R{1,2}.fq.gz" --reference "genome.fa"`
 
 
 ## Pipeline Summary
@@ -43,7 +51,9 @@ Iterative assembly
  * Repeat with the assembled contigs as the new seed sequences
 
 Extract reference matches from the final contigs [optional]
+
 For use if using exon sequences as the reference sequences
+
 Using gene sequences will cause issues at intron boundaries
  * Get contigs in correct orientation (`seqtk`,`fastq36`)
  * Filter for hits that span 80% of the exon length
