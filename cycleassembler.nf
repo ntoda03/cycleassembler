@@ -87,7 +87,7 @@ workflow {
 
     // Input reads are all paired fq and fq.gz files in input dir
     reads_ch = read_fastq(params.reads)
-    ref_ch = Channel.fromPath(params.reference)
+    ref_ch = file(params.reference)
 
     if( params.reference_type == 'nucl' ){
         fasta_command = "fasta36"} 
@@ -129,7 +129,7 @@ workflow {
 
     // optional extraction of exon sequences
     if( params.exons ){
-        exons_ch = Channel.fromPath(params.exons, checkIfExists: true)
+        exons_ch = file(params.exons, checkIfExists: true)
         EXTRACTEXONS(CYCLEASSEM.out.cyclecontigs, exons_ch)
         FINDEXONS(EXTRACTEXONS.out.exonseqs, exons_ch)
         CLUSTER(EXTRACTEXONS.out.exonseqs, exons_ch)
