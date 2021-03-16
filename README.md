@@ -9,11 +9,11 @@ The **poleanalyse/cycleassembler** pipeline takes as input illumina reads and re
 
 The pipeline uses [Nextflow](https://www.nextflow.io) to facilitate parallel and reproducible analyses. It uses Docker to make it easier to use and independent of software requirements.
 
-## Requirements
+### Requirements
 
 This pipeline can be run with only [Docker](https://docs.docker.com/engine/installation/) and [Nextflow](https://www.nextflow.io) and an internet connection. A docker container containing all other dependencies will be downloaded by the pipeline and can be found [here](https://hub.docker.com/repository/docker/poleanalyse/cycleassembler).
 
-## Quick start
+### Quick start
 
 Simply pull the project from github.
 
@@ -23,8 +23,13 @@ Then it can be run passing in only the reads to analyze and the reference genome
 
 `nextflow run cycleassembler -profile docker --reads "*_R{1,2}.fq.gz" --reference sequences.fa`
 
+### Citing this pipeline
 
-## Pipeline Summary
+If you use this pipeline please cite it using the DOI 10.5281/zenodo.4609123
+
+## Running the pipeline
+
+### Pipeline Summary
 
 By default, the pipeline does the following:
 
@@ -55,7 +60,7 @@ Iterative assembly
  * Get the best reciprical alignment between exons and sequences to have a single hit per reference exon (`fasta36`)
  * Cluster and align the hits (`samtools`,`fasta36`,`muscle`)
 
-## Running the pipeline
+### How to use
 
 ```
 The pipeline can be run as followed:
@@ -95,7 +100,7 @@ Exon extraction
                                     extracted.
 ```
 
-## Output files
+### Output files
 
 In the output folder the following output folders and files will be created.
 
