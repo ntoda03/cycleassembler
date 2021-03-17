@@ -105,12 +105,12 @@ Exon extraction
 In the output folder the following output folders and files will be created.
 
 * trimgalore/ 
-    Quality control information on reads
+    - Quality control information on reads
 * normalized
-    Some basic stats on reads
+    - Some basic stats on reads
 * assembled_contigs
-    A fasta file containing the sequences assembled by the program
+    - A fasta file containing the sequences assembled by the program
 * exons
-    Optional sequences extracted that match the provided exon sequences
+    - Optional sequences extracted that match the provided exon sequences
 * exon_clusters
-    Each provided exon is matched to a best reciprocal hit of a sequences assembled if possible
+    - Each provided exon is matched to a best reciprocal hit of a sequences assembled if possible
