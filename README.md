@@ -113,7 +113,7 @@ Trimming options
     --clip_r2_end   [int]           Remove int bases from the end of reverse paired end read 2 (default: 0)
     --skip_trimming [bool]          Skip the adapter trimming step (default: false)
     --skip_dedupe [bool]            Skip the read deduplication step  (default: false)
-    --output_trimmed                Ouput the trimmed and processed reads to the results directory 
+    --output_trimmed [bool]         Ouput the trimmed and processed reads to the results directory
 
 Assembly seed sequences
     --seeds [file]                  Seed contigs from a previous assembly of this data to use to identify initial
