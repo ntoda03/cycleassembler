@@ -45,6 +45,8 @@ Then it can be run passing in only the reads to analyze and the reference genome
 
 ### Citing this pipeline
 
+This pipeline is part of the work of the pole analyse UMS2700 at the National Museum of Natural History in Paris.
+
 If you use this pipeline please cite it using the DOI 10.5281/zenodo.4609123
 
 ## Running the pipeline
@@ -90,9 +92,11 @@ The pipeline can be run as followed:
 Primary arguments:
 
 Input files
-    --reads  [file]                 Input paired end fastq files to analyze in quotes. 
+    --reads  [file]                 Input paired end fastq files to analyze in quotes. Only paired data is accepted.
                                     {1,2} indicates the read pairing number and this must come after the id.
-                                    A semicolon separated list and wildcards are be accepted.
+                                    A semicolon separated list and wildcards are be accepted, for eaxmple
+                                    "*{1,2}.fq.gz" indicates all the paired fastq files in the directory and
+                                    "reads1_{1,2}.fq.gz;reads2_{1,2}.fq.gz;reads3_{1,2}.fq.gz" is for 3 sets of paired files.
                                     This should include the path to the files if they are not in the current directory.
 
 References
@@ -113,11 +117,12 @@ Trimming options
     --clip_r2_end   [int]           Remove int bases from the end of reverse paired end read 2 (default: 0)
     --skip_trimming [bool]          Skip the adapter trimming step (default: false)
     --skip_dedupe [bool]            Skip the read deduplication step  (default: false)
-    --output_trimmed [bool]         Ouput the trimmed and processed reads to the results directory
+    --output_trimmed [bool]         Ouput the trimmed reads to the results directory
 
 Assembly seed sequences
     --seeds [file]                  Seed contigs from a previous assembly of this data to use to identify initial
-                                    reads to use instead of doing an initial assembly.
+                                    reads to use instead of doing an initial assembly. This is only necessary
+                                    if no suitable reference is available.
 Exon extraction
     --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
                                     to the assembled contigs and the corresponding sequences will be
@@ -128,10 +133,14 @@ Exon extraction
 
 In the output folder the following output folders and files will be created.
 
-* trimgalore/ 
-    - Quality control information on reads
+* FASTQC_raw_reads/ 
+    - Quality control information of raw reads before trimming
+* FASTQC_trimmed_reads/ 
+    - Quality control information of reads after trimming
+* trimmed_reads/ [optional] 
+    - Trimmed reads in gzipped fastq format
 * normalized
-    - Some basic stats on reads
+    - Some basic stats on reads, generally not interesting
 * assembled_contigs
     - A fasta file containing the sequences assembled by the program
 * exons
