@@ -34,7 +34,7 @@ def helpMessage() {
 
     References
         --reference [file]              Homologous sequences of interest to focus on in fasta format
-        --reference_type [str]          ['dna' or 'prot']
+        --reference_type [str]          Type fo reference sequence ['dna' or 'prot', default: 'dna')
         --seeds [file]                  Seed contigs from a previous assembly of this data to use to 
                                         identify initial reads to use
 
@@ -85,7 +85,8 @@ workflow {
     
     // Input reads are all paired fq and fq.gz files in input dir
     reads_ch = read_fastq(params.reads)
-    ref_ch = file(params.reference)
+    // input fasta reference also
+    ref_ch = file(params.reference, checkIfExists: true)
 
     if( params.reference_type == 'nucl' ){
         fasta_command = "fasta36"} 
