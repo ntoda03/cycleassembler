@@ -15,7 +15,7 @@ This pipeline can be run with only [Docker](https://docs.docker.com/engine/insta
 
 * Required software
     - [Nextflow](https://www.nextflow.io)
-* Using with Docker
+* Using with Docker. Highly recommended.
     - [Docker](https://docs.docker.com/engine/installation/) must be installed 
     - Docker will handle all other dependencies when the pipeline is run with the option "-profile docker"
 * Using without Docker. The following software must be installed and in the path:
@@ -48,6 +48,8 @@ Then it can be run passing in only the reads to analyze and the reference genome
 This pipeline is part of the work of the pole analyse UMS2700 at the National Museum of Natural History in Paris.
 
 If you use this pipeline please cite it using the DOI 10.5281/zenodo.4609123
+
+Thanks!
 
 ## Running the pipeline
 
@@ -109,6 +111,9 @@ Optional Arguments:
 Directories
     -w                              Scratch working directory for temporary files (default: ./work)
     --outdir                        Diretory to store results files in (default: ./results)
+
+Profiles
+    -profile docker                 Use docker to handle all the software dependencies. 
 
 Trimming options
     --clip_r1 [int]                 Remove int bases from the start of paired end read 1 (default: 0)
