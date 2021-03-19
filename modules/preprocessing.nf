@@ -10,7 +10,9 @@ nextflow.enable.dsl=2
 ///////////////////////////////////////////////////////////////////////////////
 
 process TRIMMING {
-    publishDir "${params.outdir}/trimgalore", mode: 'copy', pattern: "*.html"
+    publishDir "${params.outdir}/", mode: 'copy', pattern: "*/*.html"
+    if( params.output_trimmed ){
+        publishDir "${params.outdir}/trimmed_reads", mode: 'copy', pattern: "*val*.fq.gz"}
 
     input:
         tuple val(pair_id), path(reads)
@@ -18,12 +20,14 @@ process TRIMMING {
 
     output:
         tuple val(pair_id), path('*1.fq.gz'), path('*2.fq.gz'),     emit: trimread
-        path "*fastqc.html" ,                                       emit: fastqc
+        path "*/*fastqc.html" ,                                     emit: fastqc
 
     script:
     """
-    fastqc -t $task.cpus ${reads[0]} ${reads[1]}
+    mkdir FASTQC_raw_reads FASTQC_trimmed_reads
+    fastqc -o FASTQC_raw_reads -t $task.cpus ${reads[0]} ${reads[1]}
     trim_galore --cores $task.cpus --fastqc --gzip $trim_args --paired ${reads[0]} ${reads[1]}
+    fastqc -o FASTQC_trimmed_reads -t $task.cpus *val*.fq.gz
     """
 }
 
