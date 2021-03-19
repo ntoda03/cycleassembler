@@ -11,7 +11,27 @@ The pipeline uses [Nextflow](https://www.nextflow.io) to facilitate parallel and
 
 ### Requirements
 
-This pipeline can be run with only [Docker](https://docs.docker.com/engine/installation/) and [Nextflow](https://www.nextflow.io) and an internet connection. A docker container containing all other dependencies will be downloaded by the pipeline and can be found [here](https://hub.docker.com/repository/docker/poleanalyse/cycleassembler).
+This pipeline can be run with only [Docker](https://docs.docker.com/engine/installation/) and [Nextflow](https://www.nextflow.io) and an internet connection. A docker container containing all other dependencies will be downloaded by the pipeline and can be found [here](https://hub.docker.com/repository/docker/poleanalyse/cycleassembler). If Docker is not used then the individual dependencies must be installed.
+
+* Required software
+    - [Nextflow](https://www.nextflow.io)
+* Using with Docker
+    - [Docker](https://docs.docker.com/engine/installation/) must be installed 
+    - Docker will handle all other dependencies when the pipeline is run with the option "-profile docker"
+* Using without Docker. The following software must be installed and in the path:
+    - python3 with pandas
+    - trim-galore
+    - bbmap
+    - vsearch
+    - nextgenmap
+    - samtools
+    - fastp
+    - spades
+    - seqtk
+    - muscle
+    - reaper
+    - bedtools
+    - fasta
 
 ### Quick start
 
@@ -21,7 +41,7 @@ Simply pull the project from github.
 
 Then it can be run passing in only the reads to analyze and the reference genome.
 
-`nextflow run cycleassembler -profile docker --reads "*_R{1,2}.fq.gz" --reference sequences.fa`
+`nextflow run cycleassembler -profile docker --reads "path/to/reads/*_R{1,2}.fq.gz" --reference path/to/sequences/sequences.fa`
 
 ### Citing this pipeline
 
@@ -34,28 +54,28 @@ If you use this pipeline please cite it using the DOI 10.5281/zenodo.4609123
 By default, the pipeline does the following:
 
 Basic read processing
-* Read trimming (`trimgalore`)
-* Deduplicate reads (`tally`)
-* Normalize coverage (`bbnorm`)
+* Read trimming for adapters and low quality bases (`trimgalore`)
+* Deduplicate identical reads (`tally`)
+* Normalize high coverage regions (`bbnorm`)
 
 Generate seed sequences
- * Align reads to reference (`NGM`)
+ * Align reads to reference with ~30% max divergence (`NGM`)
  * Extract aligned reads (`samtools`)
  * Filter low-complexity sequences (`fastp`)
- * Assemble reads (`spades`)
- * Filter for seed sequences that map to reference (`fasta36`)
+ * Assemble extracted reads (`spades`)
+ * Filter for seed sequences that align to reference (`fasta36`)
 
 Iterative assembly
  * Align reads to seed sequences (`NGM`)
  * Extract aligned reads (`samtools`)
  * Filter low-complexity sequences (`fastp`)
- * Assemble reads (`spades`)
+ * Assemble extracted reads (`spades`)
  * Filter for contigs that map to reference (`fasta36`)
- * Repeat with the assembled contigs as the new seed sequences
+ * Repeat with the assembled contigs as the new seed sequences (default 5 cycles)
 
 [optional] Extract precise reference matches from the final contigs. For use if using exon sequences as the reference sequences. Using gene sequences will cause issues at intron boundaries
- * Get contigs in correct orientation (`seqtk`,`fastq36`)
- * Filter for hits that span 80% of the exon length
+ * Get contigs in correct orientation relative to reference (`seqtk`,`fastq36`)
+ * Filter for alignments that span 80% of the exon length
  * Extract the sequences (`samtools`)
  * Get the best reciprical alignment between exons and sequences to have a single hit per reference exon (`fasta36`)
  * Cluster and align the hits (`samtools`,`fasta36`,`muscle`)
@@ -65,35 +85,39 @@ Iterative assembly
 ```
 The pipeline can be run as followed:
 
-  nextflow run cycleassembler [options] --reads "reads_{1,2}.fq.gz" --reference sequences.fa
+  nextflow run cycleassembler [options] --reads "path/to/reads/reads_{1,2}.fq.gz" --reference path/to/sequences/sequences.fa
 
-Mandatory arguments:
+Primary arguments:
 
 Input files
     --reads  [file]                 Input paired end fastq files to analyze in quotes. 
-                                    {1,2} indicates the read pairing number and this must  come after the id.
+                                    {1,2} indicates the read pairing number and this must come after the id.
                                     A semicolon separated list and wildcards are be accepted.
+                                    This should include the path to the files if they are not in the current directory.
 
 References
-    --reference [file]              Homologous sequences of interest to focus on in fasta format
-    --reference_type [str]          ['dna' or 'prot']
-    --seeds [file]                  Seed contigs from a previous assembly of this data to use to 
-                                    identify initial reads to use
+    --reference [file]              Homologous sequences of interest to focus on in fasta format.
+                                    This should include the path to the files if they are not in the current directory.
+    --reference_type [str]          Type fo reference sequence ['nucl' or 'prot', default: 'nucl')
 
 Optional Arguments:
 
 Directories
-    -w                              Scratch working directory
-    --outdir                        Diretory to store output files in
+    -w                              Scratch working directory for temporary files (default: ./work)
+    --outdir                        Diretory to store results files in (default: ./results)
 
-Trimming
+Trimming options
     --clip_r1 [int]                 Remove int bases from the start of paired end read 1 (default: 0)
     --clip_r1_end   [int]           Remove int bases from the end of paired end read 1 (default: 0)
     --clip_r2_start [int]           Remove int bases from the start of paired end read 2 (default: 0)
     --clip_r2_end   [int]           Remove int bases from the end of reverse paired end read 2 (default: 0)
     --skip_trimming [bool]          Skip the adapter trimming step (default: false)
     --skip_dedupe [bool]            Skip the read deduplication step  (default: false)
+    --output_trimmed                Ouput the trimmed and processed reads to the results directory 
 
+Assembly seed sequences
+    --seeds [file]                  Seed contigs from a previous assembly of this data to use to identify initial
+                                    reads to use instead of doing an initial assembly.
 Exon extraction
     --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
                                     to the assembled contigs and the corresponding sequences will be
