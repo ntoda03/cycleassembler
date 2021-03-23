@@ -21,7 +21,6 @@ def read_fastq(reads){
 
     reads_ch = Channel.fromFilePairs( file_list, checkIfExists: true, size: params.single_end ? 1 : 2)
         .ifEmpty { exit 1, "Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n" }
-        //.map { get_meta_format(it) }
 
     return reads_ch
 }
