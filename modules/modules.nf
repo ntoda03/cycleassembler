@@ -150,7 +150,7 @@ process CYCLEASSEM {
 
     input:
         tuple val(pair_id), path(initial_contigs)
-        tuple val(pair_id), path(reads1), path(reads2)
+        tuple val(pair_id), path(reads)
         path reference
         val fasta_command
         val maxit
@@ -159,6 +159,11 @@ process CYCLEASSEM {
         tuple val(pair_id), path("${pair_id}.final_scaffolds.fa"),           emit: cyclecontigs
 
     script:
+    def ngm_in = params.single_end ? "-q $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
+    filter_in = params.single_end ? "-i reads/output.fq.gz" : "-i reads/output.1.fq.gz -I reads/output.2.fq.gz"
+    filter_out = params.single_end ? "-o reads/good.fq.gz" : "-o reads/good.1.fq.gz -O reads/good.2.fq.gz"
+    def spades_in = params.single_end ? "-s reads/good.fq.gz" : "-1 reads/good.1.fq.gz -2 reads/good.2.fq.gz"
+    def bam_extract = params.single_end ? "extract_bam_reads_se" : "extract_bam_reads"
     """
     source $projectDir/bin/functions.sh
     i=0
@@ -170,7 +175,7 @@ process CYCLEASSEM {
         mkdir run_\$i/
 
         #### Map reads against seed contigs to get mapped reads ####
-        ngm -b -i 0.99 -r \$cycle_genome -1 $reads1 -2 $reads2 -o run_\$i/output.bam -t $task.cpus > run_\$i/ngm.log 2> run_\$i/ngm.err
+        ngm -b -i 0.99 -r \$cycle_genome $ngm_in -o run_\$i/output.bam -t $task.cpus > run_\$i/ngm.log 2> run_\$i/ngm.err
         command_success=0
         grep '(0 reads mapped' run_\$i/ngm.err > /dev/null 2>1 || command_success=1
         if [ \"\$command_success\" -eq 0 ]; then
@@ -184,13 +189,13 @@ process CYCLEASSEM {
             break
           fi
         fi
-        extract_bam_reads run_\$i/output $task.cpus
-        gzip run_\$i/output.*.fq
+        $bam_extract run_\$i/output $task.cpus
+        mv run_\$i/*.fq.gz ../
         rm -f run_\$i/*.bam run_\$i/*.ngm run_\$i/*.bt2
 
         #### Do de novo assembly of plastid reads ####
-        fastp -G -A -L -Q --low_complexity_filter -i run_\$i/output.1.fq.gz -I run_\$i/output.2.fq.gz -o run_\$i/good.1.fq.gz -O run_\$i/good.2.fq.gz
-        spades.py --cov-cutoff 1 -1 run_\$i/good.1.fq.gz -2 run_\$i/good.2.fq.gz -t $task.cpus -o run_\$i/spades_assembly
+        fastp -G -A -L -Q --low_complexity_filter $filter_in $filter_out
+        spades.py --cov-cutoff 1 $spades_in -t $task.cpus -o run_\$i/spades_assembly
         if [ -s run_\$i/spades_assembly/scaffolds.fasta ]; then
           cp run_\$i/spades_assembly/scaffolds.fasta run_\$i/scaff.fa
         else
@@ -227,7 +232,7 @@ process CYCLEASSEM {
         contcount=\$(grep -c \">\" run_\$i/scaffolds.verified.fasta)
         samtools faidx run_\$i/scaffolds.verified.fasta
         cycle_genome=run_\$i/scaffolds.verified.fasta
-        rm -f run_\$i/*fq* run_\$i/*fa run_\$i/*ngm
+        rm -f run_\$i/*fq* run_\$i/*fa run_\$i/*ngm reads/*fq.gz
     done
     if [ \"\$i\" -eq \"$maxit\" ] || [ \"\$contcount\" -eq \"1\" ]; then
         cp run_\$i/scaffolds.verified.fasta ${pair_id}.final_scaffolds.fa

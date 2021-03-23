@@ -127,7 +127,7 @@ workflow {
     else{
         dedupe_ch = trim_ch}
     NORM(dedupe_ch)
-    
+
     // Initial assembly to get seed sequences
     NGMALIGN(NORM.out.normreads, ref_ch)
     EXTRACTBAM(NGMALIGN.out.ngmbam)
@@ -137,7 +137,7 @@ workflow {
 
     // Iteratively assemble reads 
     BLASTFILTER(seeds_ch,ref_ch,fasta_command)
-    CYCLEASSEM(BLASTFILTER.out.filtercontigs,NORM.out.normreads,ref_ch,fasta_command,params.maxit )
+    CYCLEASSEM(BLASTFILTER.out.filtercontigs, NORM.out.normreads, ref_ch, fasta_command, params.maxit )
 
     // optional extraction of exon sequences
     if( params.exons ){
