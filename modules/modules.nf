@@ -86,15 +86,16 @@ process COMPLEXITYFILTER {
 
 process SPADESASSEM {
     input:
-        tuple val(pair_id), path(reads1), path(reads2)
+        tuple val(pair_id), path(reads)
         val assemargs
 
     output:
         tuple val(pair_id), path('spades.fa'),           emit: assembly
 
     script:
+    def read_in = params.single_end ? "-s $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
     """
-    spades.py $assemargs -1 $reads1 -2 $reads2 -t $task.cpus -o spades_assembly 
+    spades.py $assemargs $read_in -t $task.cpus -o spades_assembly 
     if [ -s spades_assembly/scaffolds.fasta ]; then
       cp spades_assembly/scaffolds.fasta spades.fa
       echo "Assembly complete."
