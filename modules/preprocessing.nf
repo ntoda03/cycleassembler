@@ -20,7 +20,7 @@ process TRIMMING {
 
     output:
         tuple val(pair_id), path('*.fq.gz'),     emit: trimread
-        path "*/*fastqc.html" ,                                     emit: fastqc
+        path "*/*fastqc.html" ,                  emit: fastqc
 
     script:
     def read_files = params.single_end ? "$reads" : "${reads[0]} ${reads[1]}"
@@ -42,14 +42,16 @@ process TRIMMING {
 
 process DEDUPE {
     input:
-        tuple val(pair_id), path(reads1), path(reads2)
+        tuple val(pair_id), path(reads)
 
     output:
-        tuple val(pair_id), path('reads.unique.1.fq.gz'), path('reads.unique.2.fq.gz'),      emit: dedupreads
+        tuple val(pair_id), path('reads.unique.*.fq.gz'),     emit: dedupreads
 
     script:
+    def read_in = params.single_end ? "-i $reads " : "-i ${reads[0]} -j ${reads[1]}"
+    def read_out = params.single_end ? "-o reads.unique.1.fq.gz " : "-o reads.unique.1.fq.gz -p reads.unique.2.fq.gz"
     """
-    tally -i $reads1 -j $reads2 -o reads.unique.1.fq.gz -p reads.unique.2.fq.gz --pair-by-offset --with-quality
+    tally $read_in $read_out --pair-by-offset --with-quality
     """
 }
 

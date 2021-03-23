@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 include {read_fastq}                                    from './modules/filehandling'
-include {TRIMMING; SKIPTRIM; DEDUPE; CORRECT; NORM}     from './modules/preprocessing'
+include {TRIMMING; DEDUPE; CORRECT; NORM}     from './modules/preprocessing'
 include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}       from './modules/modules'
 include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}           from './modules/modules'
 include {EXTRACTEXONS; FINDEXONS; CLUSTER}              from './modules/modules'
