@@ -11,15 +11,16 @@ nextflow.enable.dsl=2
 
 process NGMALIGN {
     input:
-        tuple val(pair_id), path(reads1), path(reads2)
+        tuple val(pair_id), path(reads)
         path reference
 
     output:
         tuple val(pair_id), path('align.ngm.bam'),                  emit: ngmbam
 
     script:
+    def read_in = params.single_end ? "-1 $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
     """
-    ngm -b -r $reference -1 $reads1 -2 $reads2 -o align.ngm.bam -t $task.cpus > ngm.log 2> ngm.err
+    ngm -b -r $reference $read_in -o align.ngm.bam -t $task.cpus > ngm.log 2> ngm.err
     """
 }
 
