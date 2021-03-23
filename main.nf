@@ -48,6 +48,9 @@ Directories
     -w                              Scratch working directory for temporary files (default: ./work)
     --outdir                        Diretory to store results files in (default: ./results)
 
+Pipeline control
+    -resume                         Continue a previously running analysis that did not finish.
+
 Profiles
     -profile docker                 Use docker to handle all the software dependencies. 
 
@@ -115,8 +118,7 @@ workflow {
         trim_ch = TRIMMING.out.trimread
     }
     else{
-        SKIPTRIM(reads_ch, trim_args)
-        trim_ch = SKIPTRIM.out.skiptrim
+        trim_ch = reads_ch
     }
     if( ! params.skip_dedupe ){
         DEDUPE(trim_ch)
