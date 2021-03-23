@@ -37,13 +37,21 @@ process EXTRACTBAM {
         tuple val(pair_id), path(bam)
 
     output:
-        tuple val(pair_id), path('align.ngm.*.fq'),     emit: extractread
+        tuple val(pair_id), path('*.fq.gz'),     emit: extractread
 
     script:
-    """
-    source $projectDir/bin/functions.sh
-    extract_bam_reads $bam $task.cpus
-    """
+    if( params.single_end ){
+        """
+        source $projectDir/bin/functions.sh
+        extract_bam_reads $bam $task.cpus
+        """
+    }
+    else {
+        """
+        source $projectDir/bin/functions.sh
+        extract_bam_reads_se $bam $task.cpus
+        """
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,15 +62,17 @@ process EXTRACTBAM {
 
 process COMPLEXITYFILTER {
     input:
-        tuple val(pair_id), path(reads1), path(reads2)
+        tuple val(pair_id), path(reads)
         val trimargs
 
     output:
-        tuple val(pair_id), path('good.1.fq.gz'), path('good.2.fq.gz'),     emit: filterread
+        tuple val(pair_id), path('good*fq.gz'),    emit: filterread
 
     script:
+    def read_in = params.single_end ? "-i $reads" : "-i ${reads[0]} -I ${reads[1]}"
+    def read_out = params.single_end ? "-o good.fq.gz" : "-o good.1.fq.gz -O good.2.fq.gz"
     """
-    fastp -G -A -L -Q --low_complexity_filter -i $reads1 -I $reads2 -o good.1.fq.gz -O good.2.fq.gz
+    fastp -G -A -L -Q --low_complexity_filter $read_in $read_out
     """
 }
 
