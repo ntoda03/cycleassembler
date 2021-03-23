@@ -89,17 +89,21 @@ process NORM {
 process CORRECT {
 
     input:
-        tuple val(pair_id), path(reads1), path(reads2)
+        tuple val(pair_id), path(reads)
 
     output:
-        tuple val(pair_id), path('reads.corrRep.1.fq.gz'), path('reads.corrRep.2.fq.gz'),         emit: correctreads
+        tuple val(pair_id), path('reads.rep.*.fq.gz'),         emit: correctreads
 
     script:
+    def read_in = params.single_end ? "in=$reads" : "in=${reads[0]} in2=${reads[1]}"
+    def read_out = params.single_end ? "out=reads.corr.1.fq.gz" : "out=reads.corr.1.fq.gz out2=reads.corr.2.fq.gz"
+    def read_in2 = params.single_end ? "in1=reads.corr.1.fq.gz" : "in1=reads.corr.1.fq.gz in2=reads.corr.1.fq.gz"
+    def read_out2 = params.single_end ? "out1=reads.rep.1.fq.gz" : "out1=reads.rep.1.fq.gz out2=reads.rep.2.fq.gz"
     """
     #zcat $reads1 > reads.1.fq
     #zcat $reads2 > reads.2.fq
-    tadpole.sh in=reads.1.fq in2=reads.2.fq out=reads.1.corr.fq out2=reads.2.corr.fq mode=correct k=$params.correct_kmer ecc=t -Xmx1g prealloc=t prefilter=2 prepasses=auto prefiltersize=0.6
-    repair.sh overwrite=true in1=reads.1.corr.fq in2=reads.2.corr.fq out1=reads.corrRep.1.fq.gz out2=reads.corrRep.2.fq.gz repair
+    tadpole.sh $read_in $read_out mode=correct k=$params.correct_kmer ecc=t -Xmx1g prealloc=t prefilter=2 prepasses=auto prefiltersize=0.6
+    repair.sh overwrite=true $read_in2 $read_out2 repair
     """
 }
 
