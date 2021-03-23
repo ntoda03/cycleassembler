@@ -43,13 +43,13 @@ process EXTRACTBAM {
     if( params.single_end ){
         """
         source $projectDir/bin/functions.sh
-        extract_bam_reads $bam $task.cpus
+        extract_bam_reads_se $bam $task.cpus
         """
     }
     else {
         """
         source $projectDir/bin/functions.sh
-        extract_bam_reads_se $bam $task.cpus
+        extract_bam_reads $bam $task.cpus
         """
     }
 }
