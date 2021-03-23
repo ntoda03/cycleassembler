@@ -65,15 +65,17 @@ process NORM {
     publishDir "${params.outdir}/normalized", mode: 'copy', pattern: "*.normalization_stats.txt" 
 
     input:
-        tuple val(pair_id), path(reads1), path(reads2)
+        tuple val(pair_id), path(reads)
 
     output:
-        tuple val(pair_id), path('reads.norm.1.fq.gz'), path('reads.norm.2.fq.gz'),         emit: normreads
-        path "*.normalization_stats.txt",                                                   emit: stats
+        tuple val(pair_id), path('reads.norm.*.fq.gz'),         emit: normreads
+        path "*.normalization_stats.txt",                       emit: stats
 
     script:
+    def read_in = params.single_end ? "in=$reads" : "in=${reads[0]} in2=${reads[1]}"
+    def read_out = params.single_end ? "out=reads.norm.1.fq.gz" : "out=reads.norm.1.fq.gz out2=reads.norm.2.fq.gz"
     """
-    bbnorm.sh overwrite=true mindepth=1 target=100 in=$reads1 in2=$reads2 out=reads.norm.1.fq.gz out2=reads.norm.2.fq.gz
+    bbnorm.sh overwrite=true mindepth=1 target=100 $read_in $read_out
     stats.sh overwrite=true in=reads.norm.1.fq.gz out=${pair_id}.normalization_stats.txt 
     """
 }
@@ -94,8 +96,8 @@ process CORRECT {
 
     script:
     """
-    zcat $reads1 > reads.1.fq
-    zcat $reads2 > reads.2.fq
+    #zcat $reads1 > reads.1.fq
+    #zcat $reads2 > reads.2.fq
     tadpole.sh in=reads.1.fq in2=reads.2.fq out=reads.1.corr.fq out2=reads.2.corr.fq mode=correct k=$params.correct_kmer ecc=t -Xmx1g prealloc=t prefilter=2 prepasses=auto prefiltersize=0.6
     repair.sh overwrite=true in1=reads.1.corr.fq in2=reads.2.corr.fq out1=reads.corrRep.1.fq.gz out2=reads.corrRep.2.fq.gz repair
     """
