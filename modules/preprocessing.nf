@@ -33,24 +33,6 @@ process TRIMMING {
     """
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/*                                                                           */
-/*           SKIPTRIM reformat input to skip trimming                        */
-/*                                                                           */
-///////////////////////////////////////////////////////////////////////////////
-
-process SKIPTRIM {
-    input:
-        tuple val(pair_id), path(reads)
-        val trim_args
-
-    output:
-        tuple val(pair_id), path("${reads[0]}"), path("${reads[1]}"),     emit: skiptrim
-
-    script:
-    """
-    """
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 /*                                                                           */
