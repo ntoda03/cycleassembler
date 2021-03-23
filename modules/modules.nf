@@ -18,7 +18,7 @@ process NGMALIGN {
         tuple val(pair_id), path('align.ngm.bam'),                  emit: ngmbam
 
     script:
-    def read_in = params.single_end ? "-1 $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
+    def read_in = params.single_end ? "-q $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
     """
     ngm -b -r $reference $read_in -o align.ngm.bam -t $task.cpus > ngm.log 2> ngm.err
     """
@@ -37,7 +37,7 @@ process EXTRACTBAM {
         tuple val(pair_id), path(bam)
 
     output:
-        tuple val(pair_id), path('align.ngm.1.fq'), path('align.ngm.2.fq'),     emit: extractread
+        tuple val(pair_id), path('align.ngm.*.fq'),     emit: extractread
 
     script:
     """
