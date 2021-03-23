@@ -19,14 +19,16 @@ process TRIMMING {
         val trim_args
 
     output:
-        tuple val(pair_id), path('*1.fq.gz'), path('*2.fq.gz'),     emit: trimread
+        tuple val(pair_id), path('*.fq.gz'),     emit: trimread
         path "*/*fastqc.html" ,                                     emit: fastqc
 
     script:
+    def read_files = params.single_end ? "$reads" : "${reads[0]} ${reads[1]}"
+    def read_pairing = params.single_end ? "" : "--paired"
     """
     mkdir FASTQC_raw_reads FASTQC_trimmed_reads
-    fastqc -o FASTQC_raw_reads -t $task.cpus ${reads[0]} ${reads[1]}
-    trim_galore --cores $task.cpus --fastqc --gzip $trim_args --paired ${reads[0]} ${reads[1]}
+    fastqc -o FASTQC_raw_reads -t $task.cpus $read_files
+    trim_galore --cores $task.cpus --fastqc --gzip $trim_args $read_pairing $read_files
     fastqc -o FASTQC_trimmed_reads -t $task.cpus *val*.fq.gz
     """
 }
