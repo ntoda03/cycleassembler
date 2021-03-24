@@ -110,7 +110,7 @@ Optional Arguments:
 
 Directories
     -w                              Scratch working directory for temporary files (default: ./work)
-    --outdir                        Diretory to store results files in (default: ./results)
+    --outdir                        Directory to store results files in (default: ./results)
 
 Pipeline control
     -resume                         Continue a previously running analysis that did not finish.
@@ -121,7 +121,8 @@ Profiles
 Reads
     --single_end [bool]             Whether reads are single end (true/false, default: false)
                                     This is not recommended since the benefit of this pipeline comes
-                                    mostly from finding paired reads where only one end maps.
+                                    mostly from finding paired reads where only one end maps to extend
+                                    the contigs.
 
 Trimming options
     --clip_r1 [int]                 Remove int bases from the start of paired end read 1 (default: 0)
