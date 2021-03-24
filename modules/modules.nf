@@ -169,6 +169,7 @@ process CYCLEASSEM {
     i=0
     contcount=10 
     cycle_genome=$initial_contigs
+    mkdir -p reads
 
     while ( [ \"\$i\" -lt \"$maxit\" ] && [ \"\$contcount\" -gt \"1\" ] ); do
         let i=i+1 
