@@ -190,7 +190,7 @@ process CYCLEASSEM {
           fi
         fi
         $bam_extract run_\$i/output $task.cpus
-        mv run_\$i/*.fq.gz ../
+        mv run_\$i/*.fq.gz reads/
         rm -f run_\$i/*.bam run_\$i/*.ngm run_\$i/*.bt2
 
         #### Do de novo assembly of plastid reads ####
