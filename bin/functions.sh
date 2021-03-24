@@ -23,7 +23,7 @@ function extract_bam_reads {
   samtools merge --threads $cores -f $prefix.merged.bam $prefix.1.bam $prefix.2.bam $prefix.3.bam 2> /dev/null
   samtools sort --threads $cores -n $prefix.merged.bam -o $prefix.merged.sorted.bam 2> /dev/null
   bedtools bamtofastq -i $prefix.merged.sorted.bam -fq $prefix.1.fq -fq2 $prefix.2.fq
-  gzip *fq
+  gzip $prefix.1.fq $prefix.2.fq
 }
 
 #
@@ -44,9 +44,8 @@ function extract_bam_reads_se {
     prefix=${prefix%.bam}
   fi
   samtools view --threads $cores -bh -F 4 $prefix.bam > $prefix.map.bam
-  #samtools sort --threads $cores -n $prefix.merged.bam -o $prefix.merged.sorted.bam 2> /dev/null
   bedtools bamtofastq -i $prefix.map.bam -fq $prefix.fq
-  gzip *.fq
+  gzip $prefix.fq
 }
 
 #
