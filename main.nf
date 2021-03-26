@@ -22,7 +22,6 @@ def helpMessage() {
     poleanalyse/cycleassembler version 1.0.1
 
     Usage:
-    
 The pipeline can be run as followed:
 
   nextflow run cycleassembler [options] --reads "path/to/reads/reads_{1,2}.fq.gz" --reference path/to/sequences/sequences.fa
@@ -46,32 +45,38 @@ Optional Arguments:
 
 Directories
     -w                              Scratch working directory for temporary files (default: ./work)
-    --outdir                        Diretory to store results files in (default: ./results)
+    --outdir                        Directory to store results files in (default: ./results)
 
 Pipeline control
     -resume                         Continue a previously running analysis that did not finish.
-
+    
 Profiles
     -profile docker                 Use docker to handle all the software dependencies. 
+
+Reads
+    --single_end [bool]             Whether reads are single end (true/false, default: false)
+                                    This is not recommended since the benefit of this pipeline comes
+                                    mostly from finding paired reads where only one end maps to extend
+                                    the contigs.
 
 Trimming options
     --clip_r1 [int]                 Remove int bases from the start of paired end read 1 (default: 0)
     --clip_r1_end   [int]           Remove int bases from the end of paired end read 1 (default: 0)
     --clip_r2_start [int]           Remove int bases from the start of paired end read 2 (default: 0)
     --clip_r2_end   [int]           Remove int bases from the end of reverse paired end read 2 (default: 0)
-    --skip_trimming [bool]          Skip the adapter trimming step (default: false)
-    --skip_dedupe [bool]            Skip the read deduplication step  (default: false)
-    --output_trimmed [bool]         Ouput the trimmed reads to the results directory
+    --skip_trimming [bool]          Skip the adapter trimming step (true/false, default: false)
+    --skip_dedupe [bool]            Skip the read deduplication step (true/false, default: false)
+    --output_trimmed [bool]         Ouput the trimmed reads to the results directory (true/false, default: false)
 
-Assembly seed sequences
-    --seeds [file]                  Seed contigs from a previous assembly of this data to use to identify initial
-                                    reads to use instead of doing an initial assembly. This is only necessary
-                                    if no suitable reference is available.
+Assembly 
+    --maxit [int]                   The number of cycles to run for the iterative assembly. Increase this if
+                                    you need to travers divergent intergenic or intronic sequences between 
+                                    genes or exons. (default: 5)
+
 Exon extraction
     --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
                                     to the assembled contigs and the corresponding sequences will be
                                     extracted.
-
 """.stripIndent()
 }
 
