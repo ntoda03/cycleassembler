@@ -248,7 +248,7 @@ process CYCLEASSEM {
 /*                                                                           */
 ///////////////////////////////////////////////////////////////////////////////
 
-process EXTRACTEXONS {
+process ORIENT {
     publishDir "$params.outdir/assembled_contigs_orientation/", mode: 'copy'
 
     input:
