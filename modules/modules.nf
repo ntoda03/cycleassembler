@@ -268,7 +268,7 @@ process ORIENT {
     sed -i 's/>/>R/g' scaffolds.rev.fa
     cat scaffolds.rev.fa >> $contigs
     fasta36 -E 1E-10 -T $task.cpus -m 8 $reference $contigs > gene_search.txt 2> /dev/null
-    awk '(\$8>\$7) && (\$10>\$9) {print \$0}' gene_search.txt > gene_search.stranded.txt
+    awk '(\$8>\$7) && (\$10>\$9) {print \$0}' gene_search.txt |sort |uniq > gene_search.stranded.txt
     extract_seq gene_search.stranded.txt $contigs ${pair_id}.oriented.fa F    
     sed -i 's/-/__/g' ${pair_id}.oriented.fa
     sed -i 's/:/___/g' ${pair_id}.oriented.fa
