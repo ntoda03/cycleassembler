@@ -3,10 +3,10 @@
 nextflow.enable.dsl=2
 
 include {read_fastq}                                    from './modules/filehandling'
-include {TRIMMING; DEDUPE; CORRECT; NORM}     from './modules/preprocessing'
+include {TRIMMING; DEDUPE; CORRECT; NORM}               from './modules/preprocessing'
 include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}       from './modules/modules'
 include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}           from './modules/modules'
-include {EXTRACTEXONS; FINDEXONS; CLUSTER}              from './modules/modules'
+include {EXTRACTEXONS; FINDEXONS; CLUSTER; ORIENT}      from './modules/modules'
 
 /*
 ========================================================================================
@@ -72,6 +72,8 @@ Assembly
     --maxit [int]                   The number of cycles to run for the iterative assembly. Increase this if
                                     you need to travers divergent intergenic or intronic sequences between 
                                     genes or exons. (default: 5)
+    --orient [bool]                 Whether to orient contigs relative to the reference (true/false, default: true)
+                                    This should be turned off if a contig may have matches in multiple orientations
 
 Exon extraction
     --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
@@ -144,10 +146,17 @@ workflow {
     BLASTFILTER(seeds_ch,ref_ch,fasta_command)
     CYCLEASSEM(BLASTFILTER.out.filtercontigs, NORM.out.normreads, ref_ch, fasta_command, params.maxit )
 
+    // optional orient sequences relative to reference
+    if( params.orient ){
+        contig_ch = ORIENT(CYCLEASSEM.out.cyclecontigs, ref_ch)
+    }
+    else {
+        contig_ch = CYCLEASSEM.out.cyclecontigs}
+
     // optional extraction of exon sequences
     if( params.exons ){
         exons_ch = file(params.exons, checkIfExists: true)
-        EXTRACTEXONS(CYCLEASSEM.out.cyclecontigs, exons_ch)
+        EXTRACTEXONS(contig_ch, exons_ch)
         FINDEXONS(EXTRACTEXONS.out.exonseqs, exons_ch)
         CLUSTER(EXTRACTEXONS.out.exonseqs, exons_ch)
     }

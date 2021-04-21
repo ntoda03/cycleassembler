@@ -137,6 +137,8 @@ Assembly
     --maxit [int]                   The number of cycles to run for the iterative assembly. Increase this if
                                     you need to travers divergent intergenic or intronic sequences between 
                                     genes or exons. (default: 5)
+    --orient [bool]                 Whether to orient contigs relative to the reference (true/false, default: true)
+                                    This should be turned off if a contig may have matches in multiple orientations
 
 Exon extraction
     --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
