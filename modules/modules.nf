@@ -244,6 +244,40 @@ process CYCLEASSEM {
 
 ///////////////////////////////////////////////////////////////////////////////
 /*                                                                           */
+/*            ORIENT change orientation of contigs to match reference        */
+/*                                                                           */
+///////////////////////////////////////////////////////////////////////////////
+
+process EXTRACTEXONS {
+    publishDir "$params.outdir/assembled_contigs_orientation/", mode: 'copy'
+
+    input:
+        tuple val(pair_id), path(contigs)
+        path(reference)
+
+    output:
+        tuple val(pair_id), path('${pair_id}.oriented.fa'),           emit: oriented
+
+    script:
+    """
+    source $projectDir/bin/functions.sh
+    cp $reference reference.fa
+    sed -i 's/_length.*//g' $contigs
+    # Coordinates start from the end of the contig if they align on negative strand so avoid that by adding revcomp of all contigs
+    seqtk seq -r $contigs > scaffolds.rev.fa
+    sed -i 's/>/>R/g' scaffolds.rev.fa
+    cat scaffolds.rev.fa >> $contigs
+    fasta36 -E 1E-10 -T $task.cpus -m 8 $reference $contigs > gene_search.txt 2> /dev/null
+    awk '(\$8>\$7) && (\$10>\$9) {print \$0}' gene_search.txt > gene_search.stranded.txt
+    extract_seq gene_search.stranded.txt $contigs ${pair_id}.oriented.fa F    
+    sed -i 's/-/__/g' ${pair_id}.oriented.fa
+    sed -i 's/:/___/g' ${pair_id}.oriented.fa
+    """
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+/*                                                                           */
 /*            EXTRACTEXONS extract exon sequences based on reference         */
 /*                                                                           */
 ///////////////////////////////////////////////////////////////////////////////
