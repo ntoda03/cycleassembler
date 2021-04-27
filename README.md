@@ -1,5 +1,5 @@
 
-# poleanalyse/cycleassembler
+x# poleanalyse/cycleassembler
 
 **Iterative assembly pipeline that extends from generated seed contigs**.
 
@@ -144,6 +144,11 @@ Exon extraction
     --exons [file]                  Fasta file containing exon sequences. The exons will be mapped
                                     to the assembled contigs and the corresponding sequences will be
                                     extracted.
+
+Reporting
+    -N [email]                      Receive an email when the pipeline finishes running.
+                                    sendmail must be install (eg with sudo apt install exim4-daemon-light)
+                                    
 ```
 
 ### Output files
