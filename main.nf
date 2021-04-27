@@ -82,7 +82,7 @@ Exon extraction
 
 Reporting
     -N [email]                      Receive an email when the pipeline finishes running.
-                                    sendmail must be install (eg with sudo apt install exim4-daemon-light)
+                                    sendmail must be install (eg with sudo apt install sendmail)
 
 """.stripIndent()
 }
