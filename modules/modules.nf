@@ -311,7 +311,7 @@ process EXTRACTEXONS {
         path(exons)
 
     output:
-        tuple val(pair_id), path('${pair_id}.fa'),           emit: exonseqs
+        tuple val(pair_id), path("${pair_id}.fa"),           emit: exonseqs
 
     script:
     """
@@ -392,7 +392,7 @@ process CLUSTER {
     source $projectDir/bin/functions.sh
     mkdir -p exon_clusters
     create_cluster $exons $seqs nucl exon_clusters/$pair_id $task.cpus
-    cp exon_clusters/$pair_id/gene_search_clusters/*clw exon_clusters/$pair_id/
-    cp exon_clusters/$pair_id/gene_search_clusters/*txt.fa exon_clusters/$pair_id/
+    cp exon_clusters/$pair_id/*_clusters/*clw exon_clusters/$pair_id/
+    cp exon_clusters/$pair_id/*_clusters/*txt.fa exon_clusters/$pair_id/
    """
 }
