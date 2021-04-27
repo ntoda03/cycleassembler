@@ -7,7 +7,7 @@ include {TRIMMING; DEDUPE; CORRECT; NORM}               from './modules/preproce
 include {NGMALIGN; COMPLEXITYFILTER; SPADESASSEM}       from './modules/modules'
 include {EXTRACTBAM; BLASTFILTER; CYCLEASSEM}           from './modules/modules'
 include {EXTRACTEXONS; FINDEXONS; CLUSTER; ORIENT}      from './modules/modules'
-
+include {SCAFFOLDSOUT}                                  from './modules/modules'
 /*
 ========================================================================================
                          cycleassembler
@@ -152,6 +152,7 @@ workflow {
     }
     else {
         contig_ch = CYCLEASSEM.out.cyclecontigs}
+    SCAFFOLDSOUT(contig_ch)
 
     // optional extraction of exon sequences
     if( params.exons ){

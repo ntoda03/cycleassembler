@@ -146,7 +146,6 @@ process BLASTFILTER {
 ///////////////////////////////////////////////////////////////////////////////
 
 process CYCLEASSEM {
-    publishDir "$params.outdir/assembled_contigs", mode: 'copy'
 
     input:
         tuple val(pair_id), path(initial_contigs)
@@ -156,7 +155,7 @@ process CYCLEASSEM {
         val maxit
 
     output:
-        tuple val(pair_id), path("${pair_id}.final_scaffolds.fa"),           emit: cyclecontigs
+        tuple val(pair_id), path("${pair_id}.scaffolds.fa"),           emit: cyclecontigs
 
     script:
     def ngm_in = params.single_end ? "-q $reads" : "-1 ${reads[0]} -2 ${reads[1]}"
@@ -236,7 +235,7 @@ process CYCLEASSEM {
         rm -f run_\$i/*fq* run_\$i/*fa run_\$i/*ngm reads/*fq.gz
     done
     if [ \"\$i\" -eq \"$maxit\" ] || [ \"\$contcount\" -eq \"1\" ]; then
-        cp run_\$i/scaffolds.verified.fasta ${pair_id}.final_scaffolds.fa
+        cp run_\$i/scaffolds.verified.fasta ${pair_id}.scaffolds.fa
     fi
     """
 }
@@ -249,7 +248,6 @@ process CYCLEASSEM {
 ///////////////////////////////////////////////////////////////////////////////
 
 process ORIENT {
-    publishDir "$params.outdir/assembled_contigs_orientation/", mode: 'copy'
 
     input:
         tuple val(pair_id), path(contigs)
@@ -273,6 +271,28 @@ process ORIENT {
     extract_seq gene_search.stranded.txt $contigs ${pair_id}.oriented.fa F    
     sed -i 's/-/__/g' ${pair_id}.oriented.fa
     sed -i 's/:/___/g' ${pair_id}.oriented.fa
+    """
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+/*                                                                           */
+/*        SCAFFOLDSOUT only output scaffolds after deciding last step        */
+/*                                                                           */
+///////////////////////////////////////////////////////////////////////////////
+
+process SCAFFOLDSOUT {
+    publishDir "$params.outdir/assembled_contigs/", mode: 'copy'
+
+    input:
+        tuple val(pair_id), path(contigs)
+
+    output:
+        tuple val(pair_id), path("${pair_id}.final_scaffolds.fa"),           emit: finalscaffs
+
+    script:
+    """
+    mv $contigs ${pair_id}.final_scaffolds.fa
     """
 }
 
