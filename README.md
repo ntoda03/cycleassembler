@@ -1,5 +1,5 @@
 
-x# poleanalyse/cycleassembler
+# poleanalyse/cycleassembler
 
 **Iterative assembly pipeline that extends from generated seed contigs**.
 
@@ -165,8 +165,6 @@ In the output folder the following output folders and files will be created.
     - Some basic stats on reads, generally not interesting
 * assembled_contigs
     - A fasta file containing the sequences assembled by the program
-* assembled_contigs_orientation
-    - A fasta file containing the sequences assembled with the orientation changed to match the reference
 * exons
     - Optional sequences extracted that match the provided exon sequences
 * exon_clusters
