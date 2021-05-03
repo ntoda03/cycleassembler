@@ -260,7 +260,7 @@ process ORIENT {
     """
     source $projectDir/bin/functions.sh
     cp $reference reference.fa
-    sed -i 's/_length.*//g' $contigs
+    # sed -i 's/_length.*//g' $contigs
     # Coordinates start from the end of the contig if they align on negative strand so avoid that by adding revcomp of all contigs
     seqtk seq -r $contigs > scaffolds.rev.fa
     sed -i 's/>/>R/g' scaffolds.rev.fa
